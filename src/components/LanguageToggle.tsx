@@ -16,10 +16,10 @@ const LanguageToggle: React.FC = () => {
       variant="outline" 
       size="sm"
       onClick={toggleLanguage}
-      className="gap-1 text-xs border-bengali-blue text-bengali-blue hover:bg-bengali-blue/10"
+      className="gap-1 text-xs border-bengali-blue text-bengali-blue hover:bg-bengali-blue/10 h-8 px-3"
     >
       <Languages className="h-3.5 w-3.5" />
-      {t('EN', 'বাং')}
+      {language === 'bengali' ? t('ইংরেজি', 'English') : t('বাংলা', 'Bengali')}
     </Button>
   );
 };

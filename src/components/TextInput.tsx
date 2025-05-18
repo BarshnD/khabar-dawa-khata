@@ -47,7 +47,11 @@ const TextInput: React.FC<TextInputProps> = ({ onItemAdded }) => {
         placeholder={t("আইটেম নাম লিখুন...", "Enter item name...")}
         className="flex-1"
       />
-      <Button type="submit" disabled={!itemName.trim() || !activeListId}>
+      <Button 
+        type="submit" 
+        disabled={!itemName.trim() || !activeListId}
+        aria-label={t("যোগ করুন", "Add")}
+      >
         <Send className="h-4 w-4" />
       </Button>
     </form>

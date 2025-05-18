@@ -85,6 +85,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
           size="lg"
           className={`rounded-full p-3 w-14 h-14 ${isListening ? 'bg-red-500' : 'bg-bengali-green'}`}
           disabled={processing}
+          aria-label={isListening ? t("বন্ধ করুন", "Stop") : t("শুরু করুন", "Start")}
         >
           {isListening ? (
             <MicOff className="h-6 w-6" />
@@ -102,7 +103,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
               : t("বাজার তালিকায় যোগ করতে শুরু করুন", "Start to add to your shopping list")}
           </p>
           <p className="text-xs opacity-70">
-            {language === "bengali" ? "বাংলা" : "English"}
+            {language === "bengali" ? t("বাংলা", "Bengali") : t("ইংরেজি", "English")}
           </p>
         </div>
       </div>
