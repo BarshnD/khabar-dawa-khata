@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SpeechRecognitionOptions {
   language?: string;
@@ -43,9 +44,10 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
   const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognitionInterface | null>(null);
+  const { language: appLanguage, t } = useLanguage();
 
   const { 
-    language = "bn-IN", // Bengali (India) as default
+    language = appLanguage === 'bengali' ? "bn-IN" : "en-IN", // Set based on app language
     continuous = false, 
     interimResults = true 
   } = options;
@@ -55,14 +57,21 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       setIsSupported(true);
     } else {
-      toast.error("আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়");
+      toast.error(t("আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়", "Voice input is not supported in your browser."));
       console.error("Speech recognition is not supported in this browser.");
     }
-  }, []);
+  }, [t]);
+
+  // Update speech recognition language when app language changes
+  useEffect(() => {
+    if (appLanguage) {
+      options.language = appLanguage === 'bengali' ? "bn-IN" : "en-IN";
+    }
+  }, [appLanguage, options]);
 
   const start = useCallback(() => {
     if (!isSupported) {
-      toast.error("আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়");
+      toast.error(t("আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়", "Voice input is not supported in your browser."));
       return;
     }
 
@@ -100,11 +109,11 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
       recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
         if (event.error === "not-allowed") {
-          toast.error("মাইক্রোফোনে অনুমতি দেয়া হয়নি");
+          toast.error(t("মাইক্রোফোনে অনুমতি দেয়া হয়নি", "Microphone permission denied"));
         } else if (event.error === "network") {
-          toast.error("নেটওয়ার্ক সমস্যা");
+          toast.error(t("নেটওয়ার্ক সমস্যা", "Network error"));
         } else {
-          toast.error(`ত্রুটি: ${event.error}`);
+          toast.error(t(`ত্রুটি: ${event.error}`, `Error: ${event.error}`));
         }
         setListening(false);
       };
@@ -118,10 +127,10 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
       
     } catch (error) {
       console.error("Error starting speech recognition:", error);
-      toast.error("ভয়েস ইনপুট শুরু করতে সমস্যা হচ্ছে");
+      toast.error(t("ভয়েস ইনপুট শুরু করতে সমস্যা হচ্ছে", "Error starting voice input"));
       setListening(false);
     }
-  }, [continuous, interimResults, isSupported, language]);
+  }, [continuous, interimResults, isSupported, language, t]);
 
   const stop = useCallback(() => {
     if (recognitionInstance) {
