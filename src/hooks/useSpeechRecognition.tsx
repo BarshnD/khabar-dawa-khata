@@ -8,11 +8,41 @@ interface SpeechRecognitionOptions {
   interimResults?: boolean;
 }
 
+// Define the proper types for Web Speech API
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionError {
+  error: string;
+}
+
+interface SpeechRecognitionInterface {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionError) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+}
+
+// Declare the global interfaces for TypeScript
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognitionInterface;
+    webkitSpeechRecognition?: new () => SpeechRecognitionInterface;
+  }
+}
+
 export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => {
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
-  const [recognitionInstance, setRecognitionInstance] = useState<any>(null);
+  const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognitionInterface | null>(null);
 
   const { 
     language = "bn-IN", // Bengali (India) as default
@@ -38,6 +68,12 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
 
     try {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.error("SpeechRecognition is not available");
+        setIsSupported(false);
+        return;
+      }
+
       const recognition = new SpeechRecognition();
 
       recognition.lang = language;
@@ -49,7 +85,7 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
         setTranscript("");
       };
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         const current = event.resultIndex;
         const result = event.results[current];
         const transcriptResult = result[0].transcript;
@@ -61,7 +97,7 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
         }
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
         if (event.error === "not-allowed") {
           toast.error("মাইক্রোফোনে অনুমতি দেয়া হয়নি");

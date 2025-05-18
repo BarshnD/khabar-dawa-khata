@@ -6,6 +6,7 @@ import VoiceInput from "@/components/VoiceInput";
 import TextInput from "@/components/TextInput";
 import RecipeParser from "@/components/RecipeParser";
 import FestivalListsSection from "@/components/FestivalListsSection";
+import LanguageToggle from "@/components/LanguageToggle";
 import { ShoppingListProvider } from "@/contexts/ShoppingListContext";
 
 const Index = () => {
@@ -22,6 +23,11 @@ const Index = () => {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-4 flex flex-col max-w-md">
+          {/* Language toggle */}
+          <div className="flex justify-end mb-2">
+            <LanguageToggle />
+          </div>
+          
           {/* Shopping list */}
           <div className="flex-1 overflow-auto mb-4">
             <ShoppingList />

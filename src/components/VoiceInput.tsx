@@ -4,6 +4,7 @@ import { Mic, MicOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useShoppingList } from "@/contexts/ShoppingListContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 type VoiceInputProps = {
@@ -11,12 +12,19 @@ type VoiceInputProps = {
 };
 
 const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
-  const [language, setLanguage] = useState<"bn-IN" | "en-IN">("bn-IN");
+  const { language, t } = useLanguage();
+  const [speechLang, setSpeechLang] = useState<"bn-IN" | "en-IN">(language === "bengali" ? "bn-IN" : "en-IN");
+  
   const { startListening, stopListening, isListening, transcript, resetTranscript, isSupported } = 
-    useSpeechRecognition({ language, continuous: false });
+    useSpeechRecognition({ language: speechLang, continuous: false });
   
   const { activeListId, addItem } = useShoppingList();
   const [processing, setProcessing] = useState(false);
+
+  // Update speech recognition language when app language changes
+  useEffect(() => {
+    setSpeechLang(language === "bengali" ? "bn-IN" : "en-IN");
+  }, [language]);
 
   useEffect(() => {
     if (!isListening && transcript) {
@@ -35,8 +43,8 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
       
       if (processedText.length > 0) {
         // Add the item to the active list
-        addItem(activeListId, processedText, undefined, language === "bn-IN" ? "bengali" : "english");
-        toast.success(`"${processedText}" যোগ করা হয়েছে`);
+        addItem(activeListId, processedText, undefined, language);
+        toast.success(t(`"${processedText}" যোগ করা হয়েছে`, `"${processedText}" added`));
         
         if (onItemAdded) {
           onItemAdded();
@@ -44,7 +52,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
       }
     } catch (error) {
       console.error("Error processing voice input:", error);
-      toast.error("ভয়েস ইনপুট প্রক্রিয়াকরণে সমস্যা");
+      toast.error(t("ভয়েস ইনপুট প্রক্রিয়াকরণে সমস্যা", "Error processing voice input"));
     } finally {
       resetTranscript();
       setProcessing(false);
@@ -59,14 +67,11 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
     }
   };
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === "bn-IN" ? "en-IN" : "bn-IN");
-  };
-
   if (!isSupported) {
     return (
       <div className="p-4 bg-red-50 text-red-800 rounded-lg">
-        <p>আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়। অনুগ্রহ করে ক্রোম বা সাফারি ব্যবহার করুন।</p>
+        <p>{t("আপনার ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়। অনুগ্রহ করে ক্রোম বা সাফারি ব্যবহার করুন।", 
+          "Voice input is not supported in your browser. Please use Chrome or Safari.")}</p>
       </div>
     );
   }
@@ -92,24 +97,19 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onItemAdded }) => {
         
         <div className="flex-1">
           <p className="text-sm font-medium mb-1">
-            {isListening ? "বলুন..." : "বাজার তালিকায় যোগ করতে শুরু করুন"}
+            {isListening 
+              ? t("বলুন...", "Speak...") 
+              : t("বাজার তালিকায় যোগ করতে শুরু করুন", "Start to add to your shopping list")}
           </p>
           <p className="text-xs opacity-70">
-            {language === "bn-IN" ? "বাংলা" : "English"} - 
-            <button 
-              onClick={toggleLanguage} 
-              className="ml-1 text-bengali-blue underline"
-              disabled={isListening}
-            >
-              {language === "bn-IN" ? "ইংরেজিতে পরিবর্তন করুন" : "Change to Bengali"}
-            </button>
+            {language === "bengali" ? "বাংলা" : "English"}
           </p>
         </div>
       </div>
       
       {isListening && (
         <div className="px-4 py-3 bg-white rounded-lg border animate-pulse-light">
-          {transcript || "আপনার কথা শোনা হচ্ছে..."}
+          {transcript || t("আপনার কথা শোনা হচ্ছে...", "Listening to your voice...")}
         </div>
       )}
     </div>

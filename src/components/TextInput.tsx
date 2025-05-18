@@ -4,6 +4,7 @@ import { Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useShoppingList } from "@/contexts/ShoppingListContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 type TextInputProps = {
@@ -13,12 +14,13 @@ type TextInputProps = {
 const TextInput: React.FC<TextInputProps> = ({ onItemAdded }) => {
   const [itemName, setItemName] = useState("");
   const { activeListId, addItem } = useShoppingList();
+  const { language, t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!activeListId) {
-      toast.error("কোন তালিকা নির্বাচন করা হয়নি");
+      toast.error(t("কোন তালিকা নির্বাচন করা হয়নি", "No list selected"));
       return;
     }
     
@@ -26,9 +28,9 @@ const TextInput: React.FC<TextInputProps> = ({ onItemAdded }) => {
       // Determine language based on simple heuristic
       // In a production app, you would use proper language detection
       const containsBengaliChars = /[\u0980-\u09FF]/.test(itemName);
-      const language = containsBengaliChars ? "bengali" : "english";
+      const itemLanguage = containsBengaliChars ? "bengali" : "english";
       
-      addItem(activeListId, itemName.trim(), undefined, language);
+      addItem(activeListId, itemName.trim(), undefined, itemLanguage);
       setItemName("");
       
       if (onItemAdded) {
@@ -42,7 +44,7 @@ const TextInput: React.FC<TextInputProps> = ({ onItemAdded }) => {
       <Input
         value={itemName}
         onChange={(e) => setItemName(e.target.value)}
-        placeholder="আইটেম নাম লিখুন..."
+        placeholder={t("আইটেম নাম লিখুন...", "Enter item name...")}
         className="flex-1"
       />
       <Button type="submit" disabled={!itemName.trim() || !activeListId}>
